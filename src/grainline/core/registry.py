@@ -123,8 +123,24 @@ def register_strategy(
     )
 
 
+#: Package holding the always-present free strategy. Imported by
+#: :func:`discover` before anything else, because the registry is the component
+#: responsible for knowing what exists, and the free strategy always exists.
+CORE_STRATEGY_PACKAGE = "grainline.core.nesting"
+
+
 def discover(force: bool = False) -> list[str]:
-    """Import any installed commercial modules so they can self-register.
+    """Import the strategy modules so they can self-register.
+
+    The free strategy is imported first and unconditionally. Skipping it is a
+    subtle and user-visible bug: a caller that touches the registry *before*
+    anything else has imported :mod:`grainline.core.nesting` sees an empty
+    registry. ``grainline nest`` happens to work because ``nest()`` lives in
+    that package, but ``grainline strategies`` queries the registry directly
+    and would render an empty table.
+
+    Commercial packages are then probed. Their absence is not an error - that
+    absence *is* the free build.
 
     Args:
         force: Re-run discovery even if it has already been performed.
@@ -137,6 +153,16 @@ def discover(force: bool = False) -> list[str]:
         return []
 
     loaded: list[str] = []
+
+    # Imported at call time rather than module scope: core.nesting imports back
+    # into this module to register itself, and a module-level import here would
+    # be circular.
+    try:
+        importlib.import_module(CORE_STRATEGY_PACKAGE)
+        loaded.append(CORE_STRATEGY_PACKAGE)
+    except ImportError:  # pragma: no cover - the core package is always present
+        pass
+
     for package in COMMERCIAL_PACKAGES:
         try:
             importlib.import_module(package)

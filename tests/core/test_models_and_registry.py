@@ -205,6 +205,48 @@ def test_free_guillotine_is_registered():
     assert strategy.name == "guillotine"
 
 
+def test_registry_is_populated_in_a_cold_process():
+    """The free strategy must be discoverable without importing core.nesting first.
+
+    This runs in a **subprocess** on purpose. Asserting it in-process proves
+    nothing: by the time this file executes, other tests have already imported
+    ``grainline.core.nesting``, which registers the strategy as a side effect.
+    The original version of this test passed for exactly that reason while
+    ``grainline strategies`` rendered an empty table in a clean process.
+    """
+    import subprocess
+    import sys
+
+    script = (
+        "from grainline.core.registry import available_strategies;"
+        "names = sorted(available_strategies());"
+        "assert 'guillotine' in names, names;"
+        "print('OK', names)"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True
+    )
+    assert completed.returncode == 0, (
+        f"cold-start registry lookup failed:\n"
+        f"{completed.stdout}\n{completed.stderr}"
+    )
+    assert "guillotine" in completed.stdout
+
+
+def test_cli_strategies_command_works_from_cold():
+    """``grainline strategies`` must not render an empty table on a fresh run."""
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, "-m", "grainline.cli.main", "strategies"],
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "guillotine" in completed.stdout
+
+
 def test_unknown_strategy_lists_what_is_available():
     with pytest.raises(CapabilityError, match="registered strategies"):
         get_strategy("teleport", tier=Tier.PRO)
