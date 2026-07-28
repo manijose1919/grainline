@@ -1,0 +1,36 @@
+MIT License
+
+Copyright (c) 2026 Joseph Maniate
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+NOTE ON SCOPE
+
+This MIT licence covers the GRAINLINE Free edition contained in this
+distribution: the geometry engine, the DXF and SVG importers, the rectangular
+guillotine nesting engine, the exporters, the command-line interface and the
+local web interface.
+
+The GRAINLINE Premium and Pro modules -- irregular (no-fit polygon) nesting,
+the remnant ledger, cut-path sequencing, multi-machine scheduling, costed
+quoting and the REST API -- are NOT part of this distribution and are NOT
+covered by this licence. They are distributed separately under a commercial
+licence. See https://github.com/manijose1919/grainline for details.

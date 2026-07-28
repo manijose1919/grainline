@@ -1,0 +1,50 @@
+# GRAINLINE example job
+#
+#   grainline nest examples/job.toml --out nest-output -f svg -f html
+#
+# Three parts on a standard 2440 x 1220 aluminium sheet. The L-bracket and the
+# gusset are deliberately non-rectangular: run this job on the Free edition and
+# the report will tell you how much material their bounding boxes are wasting.
+
+name = "example-fabrication-kit"
+
+[config]
+kerf = 0.2            # material the tool destroys, in mm (fibre laser)
+part_spacing = 2.0    # gap you want between parts, in mm
+sheet_margin = 5.0    # clear border inside the usable sheet, in mm
+strategy = "guillotine"
+sort_key = "area"
+
+[import]
+chord_tolerance = 0.05
+min_area = 1.0
+exclude_layers = ["DIMENSIONS", "NOTES", "DEFPOINTS"]
+
+[[stock]]
+id = "alu-3mm-2440x1220"
+width = 2440
+height = 1220
+cost = 180.0
+material = "aluminium"
+# quantity = 5        # omit for unlimited
+
+[[parts]]
+id = "bracket"
+file = "parts/bracket.dxf"
+quantity = 24
+material = "aluminium"
+grain = "free"
+
+[[parts]]
+id = "gusset"
+file = "parts/gusset.dxf"
+quantity = 16
+material = "aluminium"
+grain = "free"
+
+[[parts]]
+id = "flange"
+file = "parts/flange.dxf"
+quantity = 12
+material = "aluminium"
+grain = "free"
