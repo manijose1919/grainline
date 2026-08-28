@@ -305,6 +305,35 @@ def test_version_prints_the_edition():
     assert "GRAINLINE" in result.output
 
 
+def test_serve_refuses_a_non_loopback_bind_without_opt_in():
+    result = runner.invoke(app, ["serve", "--host", "0.0.0.0"])
+    assert result.exit_code == EXIT_ERROR
+    assert "--allow-network" in result.output
+    assert "0.0.0.0" in result.output
+
+
+def test_serve_allows_a_non_loopback_bind_with_opt_in(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+
+    called: dict[str, object] = {}
+
+    def fake_run(_app, host: str, port: int, **_kwargs: object) -> None:
+        called["host"] = host
+        called["port"] = port
+
+    monkeypatch.setitem(sys.modules, "uvicorn", SimpleNamespace(run=fake_run))
+    result = runner.invoke(app, ["serve", "--host", "0.0.0.0", "--allow-network"])
+    assert result.exit_code == EXIT_OK
+    assert called == {"host": "0.0.0.0", "port": 8711}
+
+
+def test_serve_api_refuses_a_non_loopback_bind_without_opt_in():
+    result = runner.invoke(app, ["serve-api", "--host", "0.0.0.0"])
+    assert result.exit_code == EXIT_ERROR
+    assert "--allow-network" in result.output
+
+
 # ---------------------------------------------------------------------------
 # Web
 # ---------------------------------------------------------------------------
