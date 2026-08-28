@@ -79,6 +79,24 @@ def _fail(message: str) -> None:
     raise typer.Exit(EXIT_ERROR)
 
 
+_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
+
+def _require_loopback_or_opt_in(host: str, allow_network: bool) -> None:
+    """Refuse a non-loopback bind unless the operator opted in.
+
+    These servers ship unauthenticated by default and hold proprietary
+    geometry. A warning is easy to miss in a systemd unit or a shop script;
+    requiring ``--allow-network`` makes the exposure deliberate.
+    """
+    if host in _LOOPBACK_HOSTS or allow_network:
+        return
+    _fail(
+        f"binding to {host} exposes this server on the network. "
+        "Pass --allow-network if that is what you intend, or use 127.0.0.1."
+    )
+
+
 # ---------------------------------------------------------------------------
 # nest
 # ---------------------------------------------------------------------------
@@ -575,8 +593,14 @@ def remnants_path() -> None:
 def serve_api(
     host: str = typer.Option("127.0.0.1", help="Interface to bind."),
     port: int = typer.Option(8712, help="Port to listen on."),
+    allow_network: bool = typer.Option(
+        False,
+        "--allow-network",
+        help="Permit binding to a non-loopback interface.",
+    ),
 ) -> None:
     """Start the headless REST API for ERP and MRP integration (Pro)."""
+    _require_loopback_or_opt_in(host, allow_network)
     pro = _require_pro_module()
 
     try:
@@ -596,7 +620,7 @@ def serve_api(
             f"caller is trusted. Set it to a comma-separated list of keys "
             f"before exposing this port."
         )
-    if host not in {"127.0.0.1", "localhost", "::1"}:
+    if host not in _LOOPBACK_HOSTS:
         err_console.print(
             f"[yellow]warning:[/] binding to {host} exposes the nesting API "
             f"to the network."
@@ -838,13 +862,21 @@ def init(
 def serve(
     host: str = typer.Option("127.0.0.1", help="Interface to bind."),
     port: int = typer.Option(8711, help="Port to listen on."),
+    allow_network: bool = typer.Option(
+        False,
+        "--allow-network",
+        help="Permit binding to a non-loopback interface.",
+    ),
 ) -> None:
     """Start the local web interface.
 
     Binds to loopback by default. These files are a shop's proprietary
     geometry; exposing them on a shared network must be a deliberate act, not
-    something that happens because a default was convenient.
+    something that happens because a default was convenient. Pass
+    ``--allow-network`` to bind elsewhere.
     """
+    _require_loopback_or_opt_in(host, allow_network)
+
     try:
         import uvicorn
     except ImportError:
@@ -855,10 +887,10 @@ def serve(
 
     from ..web.app import create_app
 
-    if host not in {"127.0.0.1", "localhost", "::1"}:
+    if host not in _LOOPBACK_HOSTS:
         err_console.print(
             f"[yellow]warning:[/] binding to {host} exposes your part geometry "
-            f"to the network. Use 127.0.0.1 unless you intend this."
+            f"to the network."
         )
 
     _banner()

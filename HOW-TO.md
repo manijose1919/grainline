@@ -497,8 +497,9 @@ grainline nest JOBFILE
 grainline strategies
     List nesting strategies and whether your licence covers them.
 
-grainline serve [--host HOST] [--port PORT]
+grainline serve [--host HOST] [--port PORT] [--allow-network]
     Start the local web interface (default 127.0.0.1:8711).
+    Non-loopback binds require --allow-network.
 
 grainline license show | set TOKEN | path
     Inspect or install a licence key.
